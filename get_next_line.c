@@ -6,7 +6,7 @@
 /*   By: apila-va <apila-va@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/22 19:34:08 by apila-va          #+#    #+#             */
-/*   Updated: 2021/10/26 19:49:20 by apila-va         ###   ########.fr       */
+/*   Updated: 2021/10/26 21:31:16 by apila-va         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,18 +75,79 @@ char *get_temp_line(int fd, char *line_to_join)
 	return (line_to_join);
 }
 
+char *get_line(char *line_start)
+{
+	size_t i ;
+	char *line;
+	
+	i = 0;
+
+	while(line_start[i] && line_start[i] != '\n')
+	{
+		i++;
+	}
+	line = malloc(sizeof(char) * i + 1);
+	if(line == NULL)
+	{
+		free(line);
+		return (NULL);
+	}
+	i = 0;
+	while(line_start[i] && line_start[i] != '\n')
+	{
+		line[i] = line_start[i];
+		i++;
+	}
+	return(line);
+}
+
+char *save(char *line_start)
+{
+	size_t i;
+	size_t j;
+	char *line;
+
+	i = 0;
+	while(line_start[i] && line_start[i] != '\n')
+	{
+	//	printf("%c",line_start[i]);
+		i++;
+	}
+	i++;
+	j = 0;
+	while(line_start[i + j])
+	{
+		j++;
+	}
+	line = malloc(sizeof(char) * j + 1);
+	if(line == NULL)
+	{
+		free(line);
+		return (NULL);
+	}
+	j = 0;
+	while(line_start[i])
+	{
+		line[j] = line_start[i];	
+		i++;
+		j++;
+	}
+	line[j] = '\0';
+	return (line);
+}
+
 char *get_next_line(int fd)
 {
 	char static *line_start;
-	line_start = get_temp_line(fd, line_start);
-	printf("%s" , line_start);
-	
-	while(*line_start)
-	{
-		printf("ok");
-		line_start++;
-	}
+	char *line;
+	size_t i;
 
+	i = 0;
+	line_start = get_temp_line(fd, line_start);
+	line = get_line(line_start);
+	line_start = save(line_start);
+	printf("next line :%s\n" , line);
+//	printf("saved line :%s\n" , line_start);
 	return (line_start);
 }
 
@@ -99,6 +160,8 @@ int main ()
 //      i = read(fd,buf,1);
 //      printf("%s",buf);
         get_next_line(fd);
-        //printf("%s",get_next_line(fd));
+        get_next_line(fd);
+        get_next_line(fd);
+  		//printf("%s",get_next_line(fd));
         return (0);
 }
