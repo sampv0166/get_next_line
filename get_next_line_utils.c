@@ -35,7 +35,7 @@ size_t	ft_strlen(const char *s)
 	size_t	i;
 
 	i = 0;
-	while (s[i] != '\0')
+	while (s != NULL && s[i] != '\0')
 	{
 		i++;
 	}
@@ -44,13 +44,17 @@ size_t	ft_strlen(const char *s)
 
 char	*ft_strchr(const char *str, int c)
 {
-	while (*str)
+	size_t i;
+
+	i = 0;
+	while (str && str[i])
 	{
-		if (*str == (char)c)
-			return ((char *)str);
-		str++;
+		if (str[i] == (char)c)
+			return ((char *)str + i);
+		i++;
 	}
 	if (c == '\0')
-		return ((char *)str);
+		return ((char *)str + i);
 	return (0);
+	
 }

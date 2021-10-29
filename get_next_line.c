@@ -5,163 +5,136 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: apila-va <apila-va@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/10/22 19:34:08 by apila-va          #+#    #+#             */
-/*   Updated: 2021/10/26 21:31:16 by apila-va         ###   ########.fr       */
+/*   Created: 2021/10/29 05:26:16 by apila-va          #+#    #+#             */
+/*   Updated: 2021/10/29 22:13:59 by apila-va         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
+void free_memmory(char **ptr)
+{
+	free(*ptr);
+	*ptr = NULL;
+}
+
+char *allocate_memmory(size_t size)
+{
+	char *memmory;
+	
+	memmory = (char *)malloc(sizeof(char) * size + 1);
+	if(memmory == NULL)
+	{
+		free(memmory);
+		memmory = NULL;
+		return (NULL);
+	}
+	return (memmory);
+}
 
 char *ft_strjoin2(char *str1, char *str2)
 {
-	char *joined_string;
-	char *ptr;
-
-//	printf("%s\n%s" , str1,str2);
-	if(str1 == NULL)
-	{
-		str1 = malloc(sizeof(char) * 1);
-		str1[0] = '\0';
-	}
-	joined_string = malloc(sizeof(char) *(ft_strlen(str1) + ft_strlen(str2) + 1));
-	if(joined_string == NULL)
-		return(NULL);
-	ptr = joined_string;
-	while(*str1)
-	{
-		*joined_string = *str1;
-		joined_string++;
-		str1++;
-	}
-	while (*str2)
-	{	
-		*joined_string = *str2;
-		joined_string++;
-		str2++;
-	}
-	*joined_string = '\0';
-//	free(str1);
-	return (ptr);
-}
-
-char *get_temp_line(int fd, char *line_to_join)
-{
-	char *temp_line;
-	size_t i;
-
-	i = 1;
-	temp_line = malloc (sizeof(char) * BUFFER_SIZE + 1);
-	if (temp_line == NULL)
-	{
-		free(temp_line);
-		return (NULL);
-	}
-	
-	while (!ft_strchr(temp_line,'\n') && i != 0)
-	{	
-		i = read(fd,temp_line,BUFFER_SIZE);
-		if(i == -1)
-		{
-			free(temp_line);
-			return (NULL);
-		}
-		temp_line[i] = '\0';
-	//	printf("%s",temp_line);
-		line_to_join = ft_strjoin2(line_to_join,temp_line);
-	}
-	//printf("%s",line_to_join);
-	free (temp_line);
-	return (line_to_join);
-}
-
-char *get_line(char *line_start)
-{
-	size_t i ;
-	char *line;
-	
-	i = 0;
-
-	while(line_start[i] && line_start[i] != '\n')
-	{
-		i++;
-	}
-	line = malloc(sizeof(char) * i + 1);
-	if(line == NULL)
-	{
-		free(line);
-		return (NULL);
-	}
-	i = 0;
-	while(line_start[i] && line_start[i] != '\n')
-	{
-		line[i] = line_start[i];
-		i++;
-	}
-	return(line);
-}
-
-char *save(char *line_start)
-{
+	char *new_string;
+	size_t total_len;
 	size_t i;
 	size_t j;
-	char *line;
-
+	
+	total_len = ft_strlen(str1) + ft_strlen(str2);
 	i = 0;
-	while(line_start[i] && line_start[i] != '\n')
-	{
-	//	printf("%c",line_start[i]);
-		i++;
-	}
-	i++;
 	j = 0;
-	while(line_start[i + j])
+	new_string = allocate_memmory(total_len);
+	if(new_string == NULL)
+		return(NULL);
+	
+	while(str1 && str1[i]) 
 	{
-		j++;
+		new_string[i++] = str1[j++];
 	}
-	line = malloc(sizeof(char) * j + 1);
-	if(line == NULL)
+	j = 0;
+	while (str2[j])
 	{
+		new_string[i++] = str2[j++];
+	}	
+	
+	new_string[i] = '\0';
+	free(str1);
+	str1 = new_string;
+	return (str1);
+}
+
+char *get_line(char *saved_line)
+{
+	char *line;
+	size_t i;
+	size_t j;
+	
+	i = 0;
+	j = 0;
+	line = allocate_memmory(BUFFER_SIZE);
+	if(!line || !saved_line)
+	{ 
 		free(line);
 		return (NULL);
 	}
-	j = 0;
-	while(line_start[i])
+	while(*saved_line && *saved_line != '\n')
 	{
-		line[j] = line_start[i];	
-		i++;
+		line[i] = saved_line[j];
+		j++;
+		i++;	
+	}
+	if(saved_line[j] == '\n')
+	{
+		line[i] = '\n';
 		j++;
 	}
-	line[j] = '\0';
-	return (line);
+	i++;	
+	line[i] = '\0';
+	free(saved_line);
+	saved_line = line;	
+	return (saved_line);	
 }
+
+char *get_temp_line(int fd , char *saved_line)
+{
+	int i;
+	char buffer[BUFFER_SIZE + 1];
+	
+	i = 1;
+	while (!ft_strchr(buffer, '\n') && i != 0)
+	{
+		i = read(fd, buffer, BUFFER_SIZE);
+		if (i == -1)
+		{
+			return (NULL);
+		}
+		buffer[i] = '\0';
+		if(i != 0)
+			saved_line = ft_strjoin2(saved_line,buffer);
+	}
+	return (saved_line);
+}
+
+
 
 char *get_next_line(int fd)
 {
-	char static *line_start;
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (0);	
+	static char *saved_line;
 	char *line;
-	size_t i;
+	size_t k;
+		
+	k = 0;
+	if(!saved_line)
+		saved_line = NULL;
+	if(!ft_strchr(saved_line,'\n'))	
+		  saved_line = get_temp_line(fd,saved_line);
+			  
+	line = get_line(saved_line);
+	
+	k = ft_strlen(line);
+	saved_line = line + k;
 
-	i = 0;
-	line_start = get_temp_line(fd, line_start);
-	line = get_line(line_start);
-	line_start = save(line_start);
-	printf("next line :%s\n" , line);
-//	printf("saved line :%s\n" , line_start);
-	return (line_start);
+	return (line);
 }
 
-int main ()
-{
-        int fd ;
-        size_t i;
-        char buf[1];
-        fd = open ("./file.txt" , O_RDONLY);
-//      i = read(fd,buf,1);
-//      printf("%s",buf);
-        get_next_line(fd);
-        get_next_line(fd);
-        get_next_line(fd);
-  		//printf("%s",get_next_line(fd));
-        return (0);
-}

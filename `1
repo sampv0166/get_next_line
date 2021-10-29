@@ -1,0 +1,102 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: apila-va <apila-va@42.abudhabi.ae>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/10/27 19:56:12 by apila-va          #+#    #+#             */
+/*   Updated: 2021/10/27 21:26:55 by apila-va         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "get_next_line.h"
+
+char *allocate_memmory(size_t size)
+{
+	char *memmory;
+	
+	memmory = (char *)malloc(sizeof(char) * size + 1);
+	if(memmory == NULL)
+	{
+		free(memmory);
+		memmory = NULL;
+		return (NULL);
+	}
+	return (memmory);
+}
+
+
+
+char *ft_strjoin2(char *str1, char *str2)
+{
+	char *new_string;
+	char *start;
+	size_t total_len;
+	char *ptr;
+
+	total_len = ft_strlen(str1) + ft_strlen(str2);
+	new_string = allocate_memmory(total_len);
+	if(new_string == NULL)
+		return(NULL);
+	start = new_string;
+	while(*str1)
+	{
+		*new_string = *str1;
+		new_string++;
+		str1++;
+	}
+	while (*str2)
+	{
+		*new_string = *str2;
+		new_string++;
+		str2++;
+	}
+	*new_string = '\0';
+	free(str1);
+	str1 = NULL;
+	free(str2);
+	str2 = NULL;
+	return (ptr);
+}
+
+
+char *get_buffer(fd)
+{
+	size_t i;
+	char *buffer;
+	char *joined_string;
+
+	// allocate memmory
+	buffer = allocate_memmory(BUFFER_SIZE);
+	if(buffer == NULL)
+		return (NULL);
+	joined_string = allocate_memmory(1);
+	if (joined_string == NULL)
+		return (NULL);
+	joined_string[0] = '\0';
+	while(!ft_strchr(buffer,'\n') && i != 0)
+	{
+		i = read(fd,buffer,BUFFER_SIZE);
+		if(i == -1)
+		{
+			free(buffer);
+			buffer = NULL;
+			return (NULL);
+		}
+		buffer[i] = '\n';
+		joined_string = ft_strjoin2(joined_string,buffer);
+	}
+	return (joined_string);
+}
+
+char *get_next_line(int fd)
+{
+	static char *temp_line;
+
+	if (BUFFER_SIZE <= 0 || fd < 0)
+		return (0);
+	temp_line = get_buffer(fd);
+	printf("%s",temp_line);
+	return (temp_line);
+}
