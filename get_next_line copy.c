@@ -6,7 +6,7 @@
 /*   By: apila-va <apila-va@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/29 05:26:16 by apila-va          #+#    #+#             */
-/*   Updated: 2021/11/02 06:27:45 by apila-va         ###   ########.fr       */
+/*   Updated: 2021/11/02 02:53:47 by apila-va         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,22 +18,25 @@ void free_memmory(char **ptr)
 	*ptr = NULL;
 }
 
+
+
 char *ft_strjoin2(char *str1, char *str2)
 {
 	char *new_string;
-	int total_len;
+	size_t total_len;
 	size_t i;
 	size_t j;
 	
-	total_len = ft_strlen(str1) + ft_strlen(str2) + 1;
+	total_len = ft_strlen(str1) + ft_strlen(str2);
 	i = 0;
 	j = 0;
-	new_string = (char *) malloc(sizeof(char) * (total_len));
+	new_string = (char *) malloc(sizeof(char) * (total_len + 1));
 	if(new_string == NULL)
 	{
 		free(new_string);
 		return(NULL);
 	}
+	
 	while(str1 && str1[i]) 
 	{
 		new_string[i++] = str1[j++];
@@ -44,8 +47,9 @@ char *ft_strjoin2(char *str1, char *str2)
 		new_string[i++] = str2[j++];
 	}
 	new_string[i] = '\0';
-	free_memmory(&str1);
-	return (new_string);
+	free(str1);
+	str1 = new_string;
+	return (str1);
 }
 
 unsigned int get_line_size(char *saved_line)
@@ -70,7 +74,7 @@ char *get_line(char *saved_line)
 	
 	i = 0;
 	j = 0;
-	line = (char *) malloc(sizeof(char) * (get_line_size(saved_line) + 1));
+	line = (char *) malloc(sizeof(char) * (get_line_size(saved_line)));
 	if(line == NULL)
 	{ 
 		free(line);
@@ -96,6 +100,7 @@ char *get_temp_line(int fd,char *saved_line)
 {
 	char *buffer;
 	int i;
+	//char *ptr;
 
 	i = 1;
 
@@ -112,6 +117,7 @@ char *get_temp_line(int fd,char *saved_line)
 		i = read(fd,buffer,BUFFER_SIZE);	
 		buffer[i] = '\0';
 		saved_line =  ft_strjoin2(saved_line,buffer);
+	
 	}
 
 	if(i <= 0)
@@ -119,10 +125,14 @@ char *get_temp_line(int fd,char *saved_line)
 		free(buffer);
 		if(ft_strlen(saved_line) > 0)
 			return (saved_line);
-		free(saved_line);	
 		return(NULL);		
 	}
 	free(buffer);
+	if(saved_line == NULL || !*saved_line)
+	{
+		free_memmory(&saved_line);
+	}
+	
 	return(saved_line);	
 }
 
@@ -137,9 +147,9 @@ char *get_save_line(char *saved_line)
 
 	i = get_line_size(saved_line);
 	len = ft_strlen(saved_line + i );
-	new_string = (char *)malloc(sizeof(char) * (len + 1));
+	new_string = (char *)malloc(sizeof(char) * (len));
 
-	if(new_string == NULL)
+	if(new_string == NULL|| !saved_line)
 	{
 		free(new_string);
 		return(NULL);
@@ -164,16 +174,26 @@ char *get_next_line(int fd)
 	if (fd < 0 || fd > 255 || BUFFER_SIZE <= 0)
 		return (0);	
 	next_line = NULL;
+	// if(saved_line == NULL)
+	// {
+	// 	saved_line = (char *) malloc(sizeof(char) * 1);
+	// 	if(saved_line == NULL)
+	// 	{
+	// 		free(saved_line);
+	// 		return(NULL);
+	// 	}
+	// 	saved_line[0] = '\0';
+	// }
 	saved_line = get_temp_line(fd ,saved_line);
 	if(!saved_line)
 	{
 		free(next_line);
+		free_memmory(&saved_line);
 		return(NULL);
 	}	
 	next_line = get_line(saved_line);
 	saved_line = get_save_line(saved_line);
-	//free_memmory(&saved_line);
-	//printf("~~  %s  ~~~~" ,next_line);
+	
 	return (next_line);
 }
 

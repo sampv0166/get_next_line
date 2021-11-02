@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line copy 2 working.c                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: apila-va <apila-va@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/29 05:26:16 by apila-va          #+#    #+#             */
-/*   Updated: 2021/11/02 06:27:45 by apila-va         ###   ########.fr       */
+/*   Updated: 2021/11/02 05:38:32 by apila-va         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ char *ft_strjoin2(char *str1, char *str2)
 	if(new_string == NULL)
 	{
 		free(new_string);
+		free(str1);
 		return(NULL);
 	}
 	while(str1 && str1[i]) 
@@ -73,6 +74,7 @@ char *get_line(char *saved_line)
 	line = (char *) malloc(sizeof(char) * (get_line_size(saved_line) + 1));
 	if(line == NULL)
 	{ 
+		free(saved_line);
 		free(line);
 		return (NULL);
 	}
@@ -102,6 +104,7 @@ char *get_temp_line(int fd,char *saved_line)
 	buffer = (char *) malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if(buffer == NULL)
 	{
+		free(saved_line);
 		free(buffer);
 		return(NULL);
 	}
@@ -168,12 +171,12 @@ char *get_next_line(int fd)
 	if(!saved_line)
 	{
 		free(next_line);
+		free_memmory(&saved_line);
 		return(NULL);
 	}	
 	next_line = get_line(saved_line);
 	saved_line = get_save_line(saved_line);
 	//free_memmory(&saved_line);
-	//printf("~~  %s  ~~~~" ,next_line);
 	return (next_line);
 }
 
