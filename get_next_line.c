@@ -6,174 +6,137 @@
 /*   By: apila-va <apila-va@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/29 05:26:16 by apila-va          #+#    #+#             */
-/*   Updated: 2021/11/02 06:27:45 by apila-va         ###   ########.fr       */
+/*   Updated: 2021/11/03 12:03:22 by apila-va         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-void free_memmory(char **ptr)
+static char	*ft_strjoin(char *saved_line, char *buffer)
 {
-	free(*ptr);
-	*ptr = NULL;
-}
+	char	*new_string;
+	int		total_len;
+	size_t	i;
+	size_t	j;
 
-char *ft_strjoin2(char *str1, char *str2)
-{
-	char *new_string;
-	int total_len;
-	size_t i;
-	size_t j;
-	
-	total_len = ft_strlen(str1) + ft_strlen(str2) + 1;
 	i = 0;
 	j = 0;
+	total_len = ft_strlen(saved_line) + ft_strlen(buffer) + 1;
 	new_string = (char *) malloc(sizeof(char) * (total_len));
-	if(new_string == NULL)
-	{
-		free(new_string);
-		return(NULL);
-	}
-	while(str1 && str1[i]) 
-	{
-		new_string[i++] = str1[j++];
-	}
+	if (new_string == NULL)
+		return (free_memmory(&new_string));
+	while (saved_line[i])
+		new_string[i++] = saved_line[j++];
 	j = 0;
-	while (str2[j])
-	{
-		new_string[i++] = str2[j++];
-	}
+	while (buffer[j])
+		new_string[i++] = buffer[j++];
 	new_string[i] = '\0';
-	free_memmory(&str1);
+	free_memmory(&saved_line);
 	return (new_string);
 }
 
-unsigned int get_line_size(char *saved_line)
+static char	*save_the_rest(char *saved_line)
 {
-	size_t i;
+	char	*new_string;
+	size_t	length_of_save;
+	size_t	i;
 
-	i = 0;
-	while(saved_line[i] && saved_line[i] != '\n')
+	i = get_current_line_size(saved_line);
+	length_of_save = ft_strlen(saved_line + i);
+	new_string = (char *)malloc(sizeof(char) * (length_of_save + 1));
+	if (new_string == NULL)
 	{
-		i++;
-	}
-	if(saved_line[i] == '\n')
-		i++;
-	return (i);
-}
-
-char *get_line(char *saved_line)
-{
-	char *line;
-	size_t i;
-	size_t j;
-	
-	i = 0;
-	j = 0;
-	line = (char *) malloc(sizeof(char) * (get_line_size(saved_line) + 1));
-	if(line == NULL)
-	{ 
-		free(line);
+		free(new_string);
 		return (NULL);
 	}
-	while(saved_line[j] && saved_line[j] != '\n')
+	length_of_save = 0;
+	while (saved_line && saved_line[i])
+	{
+		new_string[length_of_save] = saved_line[i];
+		i++;
+		length_of_save++;
+	}
+	new_string[length_of_save] = '\0';
+	free(saved_line);
+	saved_line = new_string;
+	return (saved_line);
+}
+
+static char	*get_current_line(char *saved_line, char *line)
+{
+	size_t	i;
+	size_t	j;
+
+	i = 0;
+	j = 0;
+	line = malloc(sizeof(char) * (get_current_line_size(saved_line) + 1));
+	if (line == NULL)
+		return (free_memmory(&line));
+	while (saved_line[j] && saved_line[j] != '\n')
 	{
 		line[i] = saved_line[j];
 		j++;
-		i++;		
+		i++;
 	}
-	if(saved_line[j] == '\n')
+	if (saved_line[j] == '\n')
 	{
-		line[i] = '\n';
+		line[i++] = '\n';
 		j++;
 	}
-	i++;	
-	line[i] = '\0';
-	return (line);	
+	line[i++] = '\0';
+	return (line);
 }
 
-char *get_temp_line(int fd,char *saved_line)
+static char	*get_temp_line(int fd, char *saved_line, int read_return)
 {
-	char *buffer;
-	int i;
-
-	i = 1;
+	char	*buffer;
 
 	buffer = (char *) malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if(buffer == NULL)
-	{
-		free(buffer);
-		return(NULL);
-	}
+	if (buffer == NULL)
+		return (free_memmory(&buffer));
 	buffer[0] = '\0';
-
-	while(i > 0 && !ft_strchr(saved_line,'\n'))
+	while (read_return > 0 && ft_strchr(saved_line, '\n') == NULL)
 	{
-		i = read(fd,buffer,BUFFER_SIZE);	
-		buffer[i] = '\0';
-		saved_line =  ft_strjoin2(saved_line,buffer);
+		read_return = read(fd, buffer, BUFFER_SIZE);
+		if (read_return > 0)
+		{
+			buffer[read_return] = '\0';
+			saved_line = ft_strjoin(saved_line, buffer);
+		}
 	}
-
-	if(i <= 0)
+	if (read_return <= 0)
 	{
 		free(buffer);
-		if(ft_strlen(saved_line) > 0)
+		if (ft_strlen(saved_line) > 0)
 			return (saved_line);
-		free(saved_line);	
-		return(NULL);		
+		free_memmory(&saved_line);
+		return (NULL);
 	}
 	free(buffer);
-	return(saved_line);	
+	return (saved_line);
 }
 
-char *get_save_line(char *saved_line)
+char	*get_next_line(int fd)
 {
-	char *new_string;
-	size_t len;
-	size_t i;
+	static char		*saved_line;
+	char			*next_line;
+	int				read_return;
 
-	
-	i = 0;
-
-	i = get_line_size(saved_line);
-	len = ft_strlen(saved_line + i );
-	new_string = (char *)malloc(sizeof(char) * (len + 1));
-
-	if(new_string == NULL)
-	{
-		free(new_string);
-		return(NULL);
-	}
-	len = 0;	
-	while(saved_line && saved_line[i])
-	{
-		new_string[len]=saved_line[i];
-		i++;
-		len++;		
-	}
-	new_string[len] ='\0';
-	free(saved_line);
-	saved_line = new_string;
-	return(saved_line);
-		
-}
-char *get_next_line(int fd)
-{
-	static char *saved_line;
-	char *next_line;
-	if (fd < 0 || fd > 255 || BUFFER_SIZE <= 0)
-		return (0);	
+	read_return = 1;
 	next_line = NULL;
-	saved_line = get_temp_line(fd ,saved_line);
-	if(!saved_line)
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (0);
+	if (!saved_line)
 	{
-		free(next_line);
-		return(NULL);
-	}	
-	next_line = get_line(saved_line);
-	saved_line = get_save_line(saved_line);
-	//free_memmory(&saved_line);
-	//printf("~~  %s  ~~~~" ,next_line);
+		saved_line = (char *) malloc(sizeof(char) * 1);
+		*saved_line = '\0';
+		if (saved_line == NULL)
+			return (free_memmory(&saved_line));
+	}
+	saved_line = get_temp_line(fd, saved_line, read_return);
+	if (!saved_line)
+		return (free_memmory(&saved_line));
+	next_line = get_current_line(saved_line, next_line);
+	saved_line = save_the_rest(saved_line);
 	return (next_line);
 }
-
