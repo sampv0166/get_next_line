@@ -6,12 +6,11 @@
 /*   By: apila-va <apila-va@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/29 05:26:16 by apila-va          #+#    #+#             */
-/*   Updated: 2021/11/05 18:55:08 by apila-va         ###   ########.fr       */
+/*   Updated: 2021/11/07 01:43:14 by apila-va         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
-#include <stdio.h>
 
 static char	*ft_strjoin(char **saved_line, char *buffer)
 {
@@ -50,12 +49,11 @@ static char	*save_the_rest(char **saved_line)
 	new_string = NULL;
 	i = get_current_line_size(*saved_line);
 	length_of_save = ft_strlen(*saved_line + i);
-	if(length_of_save > 0)
+	if (length_of_save > 0)
 	{
 		new_string = (char *)malloc(sizeof(char) * (length_of_save + 1));
 		if (new_string == NULL)
-			return (NULL);	
-
+			return (NULL);
 		length_of_save = 0;
 		while (*(*saved_line + i))
 		{
@@ -76,19 +74,14 @@ static char	*get_current_line(char **saved_line)
 	size_t	i;
 	size_t	j;
 	char	*line;
-	
+
 	i = 0;
 	j = 0;
 	line = malloc(sizeof(char) * (get_current_line_size(*saved_line) + 1));
-	if(!line)
+	if (!line)
 		return (NULL);
-
 	while (*(*saved_line + j) && *(*saved_line + j) != '\n')
-	{
-		line[i] = *(*saved_line + j);
-		j++;
-		i++;
-	}
+		line[i++] = *(*saved_line + j++);
 	if (*(*saved_line + j) == '\n')
 	{
 		line[i++] = '\n';
@@ -105,15 +98,14 @@ static char	*get_temp_line(int fd, char **saved_line, int read_return)
 	buffer = (char *) malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (buffer == NULL)
 		return (NULL);
-		
 	buffer[0] = '\0';
 	while (read_return > 0 && ft_strchr(*saved_line, '\n') == NULL)
 	{
 		read_return = read(fd, buffer, BUFFER_SIZE);
-		if(read_return <= 0)
+		if (read_return <= 0)
 			break ;
 		buffer[read_return] = '\0';
-		*saved_line = ft_strjoin(saved_line,buffer);
+		*saved_line = ft_strjoin(saved_line, buffer);
 	}
 	free(buffer);
 	return (*saved_line);

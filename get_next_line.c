@@ -6,7 +6,7 @@
 /*   By: apila-va <apila-va@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/29 05:26:16 by apila-va          #+#    #+#             */
-/*   Updated: 2021/11/03 12:03:22 by apila-va         ###   ########.fr       */
+/*   Updated: 2021/11/07 01:40:51 by apila-va         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,9 +120,7 @@ char	*get_next_line(int fd)
 {
 	static char		*saved_line;
 	char			*next_line;
-	int				read_return;
 
-	read_return = 1;
 	next_line = NULL;
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (0);
@@ -133,7 +131,7 @@ char	*get_next_line(int fd)
 		if (saved_line == NULL)
 			return (free_memmory(&saved_line));
 	}
-	saved_line = get_temp_line(fd, saved_line, read_return);
+	saved_line = get_temp_line(fd, saved_line, 1);
 	if (!saved_line)
 		return (free_memmory(&saved_line));
 	next_line = get_current_line(saved_line, next_line);
